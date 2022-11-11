@@ -2,7 +2,10 @@
 
 namespace Whitecube\NovaFlexibleContent\Value;
 
+
 use Illuminate\Support\Collection;
+use Whitecube\NovaFlexibleContent\Layouts\Collection as LayoutsCollection;
+use Whitecube\NovaFlexibleContent\Layouts\Layout;
 
 class Resolver implements ResolverInterface
 {
@@ -39,11 +42,14 @@ class Resolver implements ResolverInterface
         $value = $this->extractValueFromResource($resource, $attribute);
 
         return collect($value)->map(function($item) use ($layouts) {
-            $layout = $layouts->find($item->layout);
+            $layout = $layouts->find($item instanceof Layout ? $item->name() : $item->layout);
 
             if(!$layout) return;
 
-            return $layout->duplicateAndHydrate($item->key, (array) $item->attributes);
+            $key = $item instanceof Layout ? $item->key() : $item->key;
+            $attributes = $item instanceof Layout ? $item->getAttributes() : (array) $item->attributes;
+
+            return $layout->duplicateAndHydrate($key, $attributes);
         })->filter()->values();
     }
 
@@ -58,7 +64,9 @@ class Resolver implements ResolverInterface
     {
         $value = data_get($resource, str_replace('->', '.', $attribute)) ?? [];
 
-        if($value instanceof Collection) {
+        if ($value instanceof LayoutsCollection) {
+            $value = $value->all();
+        } elseif ($value instanceof Collection) {
             $value = $value->toArray();
         } else if (is_string($value)) {
             $value = json_decode($value) ?? [];
