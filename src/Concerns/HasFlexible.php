@@ -33,22 +33,7 @@ trait HasFlexible {
      */
     public function cast($value, $layoutMapping = [])
     {
-        if(app()->getProvider(NovaServiceProvider::class) && !app()->runningInConsole() && !app()->environment('testing')) {
-            return $value;
-        }
-
-        return $this->toFlexible($value ?: null, $layoutMapping);
-    }
-
-    /**
-     * Parse a Flexible Content from value
-     *
-     * @param mixed $value
-     * @param array $layoutMapping
-     * @return \Whitecube\NovaFlexibleContent\Layouts\Collection
-     */
-    public function toFlexible($value, $layoutMapping = [])
-    {
+       
         $flexible = $this->getFlexibleArrayFromValue($value);
 
         if(is_null($flexible)) {
